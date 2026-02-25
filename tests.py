@@ -67,6 +67,16 @@ class TestBooksCollector:
 
         assert collector.get_book_genre('Дюна') is None
 
+    def test_get_book_genre_returns_correct_genre(self):
+        collector = BooksCollector()
+
+        collector.add_new_book('Дюна')
+        collector.set_book_genre('Дюна', 'Фантастика')
+
+        result = collector.get_book_genre('Дюна')
+
+        assert result == 'Фантастика'
+
     @pytest.mark.parametrize(
         'genre, book_name',
         [
@@ -115,16 +125,14 @@ class TestBooksCollector:
         assert result == {'Дюна': 'Фантастика'}
 
     @pytest.mark.parametrize(
-        'genre, expected_result',
+        'genre',
         [
-            ['Фантастика', True],
-            ['Мультфильмы', True],
-            ['Комедии', True],
-            ['Ужасы', False],
-            ['Детективы', False]
+            'Фантастика',
+            'Мультфильмы',
+            'Комедии'
         ]
     )
-    def test_get_books_for_children(self, genre, expected_result):
+    def test_get_books_for_children_includes_allowed_genres(self, genre):
         collector = BooksCollector()
 
         collector.add_new_book('Книга')
@@ -132,10 +140,24 @@ class TestBooksCollector:
 
         result = collector.get_books_for_children()
 
-        if expected_result:
-            assert 'Книга' in result
-        else:
-            assert 'Книга' not in result
+        assert 'Книга' in result
+
+    @pytest.mark.parametrize(
+        'genre',
+        [
+            'Ужасы',
+            'Детективы'
+        ]
+    )
+    def test_get_books_for_children_excludes_age_restricted_genres(self, genre):
+        collector = BooksCollector()
+
+        collector.add_new_book('Книга')
+        collector.set_book_genre('Книга', genre)
+
+        result = collector.get_books_for_children()
+
+        assert 'Книга' not in result
 
     def test_add_book_in_favorites(self):
         collector = BooksCollector()
